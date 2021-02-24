@@ -1,0 +1,243 @@
+Software Development for Algorithmic Problems
+Project 3
+
+Note: The results and their evaluation are on Experiments.pdf
+
+Part 1: Autoencoder
+
+    Section 1: Manual
+
+    In order to run the autoencoder, firstly the user should change
+    current working directory to Autoencoder directory. Then, he
+    should write the following command:
+
+        python3 reduce.py -d <dataset> -q <queryset>
+            -od <output_dataset_file> -oq <output_query_file> 
+
+    where:
+
+        -> <dataset> is the path to the training dataset that will 
+        be used by the autoencoder in order to train.
+
+        -> <queryset> is the path to the test set that we will just extract
+        the latent vectors from it. This file will not be used by the auto-
+        encoder for training.
+
+        -> <output_dataset_file> is the path of the file that we will save
+        the predicted latent vectors extracted by the autoencoder by giving 
+        him the vectors in <dataset>(after normalizing the output of the 
+        bottleneck layer).
+
+        -> <output_query_file> is the path of the file that we will save
+        the predicted latent vectors extracted by the autoencoder by giving 
+        him the vectors in <queryset>(after normalizing the output of the 
+        bottleneck layer).
+
+        After training the user has the choice to show the loss and R2 score 
+        change through epochs, save the resulting latent vectors and run another
+        experiment with different hyperparameters.
+    
+    Section 2: Description
+
+    Firstly, the user gives the necessary hyperparameters for his desired 
+    model. Afterwards, the autoencoder starts training and when it finishes, it
+    asks the user if he wants to get the R^2 and MSE changes through the epochs.
+    After, if the user is satisfied from his model, he can save the resulting latent 
+    vectors. If he chooses to save them the encoding part until the bottleneck layer
+    will be isolated and for all input and query vectors we will call predict
+    in order to get the latent vectors. Then, these vectors are getting normalized
+    and are written into a binary file. Finally, the program asks if the user wants
+    to run another experiment with different hyperparameters.
+
+Part 2: Nearest Neighbor Search
+
+    Section 1: Manual
+
+    In order to run this program, firstly the user should make his current working
+    directory the NearestNeighborSearch one and then write the command "make" in 
+    order to compile it. In order to run it he should write the following command:
+
+        ./search -d <input_original_space> -i <input_new_space> 
+            -q <query_original_space> -s <query_new_space> 
+            -k <lsh_functions> -L <lsh_hash_tables> -ο <output_file>
+
+    where:
+
+        -> <input_original_space> is the path of the training file that contains
+        the 28x28 MNIST vectors, the original space vectors.
+
+        -> <input_new_space> is the path to the file that contains the latent vectors
+        that were created by the autoencoder giving as input the vectors of
+        <input_original_space> file.
+
+        -> <query_original_space> is the path of the query file that contains
+        the 28x28 MNIST vectors, the original space vectors.
+
+        -> <query_new_space> is the path to the file that contains the latent vectors
+        that were created by the autoencoder giving as input the vectors of
+        <query_original_space> file.
+
+        -> <lsh_functions> is the number of hash functions that a single LSH hash table
+        will have.
+
+        -> <lsh_hash_tables> is the number of hash tables of the LSH table.
+
+        -> <output_file> is the path to the file that the results will be printed.
+
+
+    Section 2: Description
+
+    Firstly, the program reads the input files and initialize 2 datasets one for
+    each file. The <input_original_space> is also used to initialize the LSH 
+    structure. Afterwards, the query files are evaluated and after doing the 
+    necessary queries(1-NN with LSH in original space, and Brute Force search
+    in both spaces), the wanted results are printed. 
+
+Part 3: Earth Mover's Distance
+
+    Section 1: Instructions
+
+        In Emd directory,we store the files that we
+        use from project 1 and the emd.cpp in order
+        to solve the problem.So the solution of problem
+        3 is entirely in emd directory.
+
+        We also use the soplex library to solve the lp.
+        From the directory soplex-4.0.2 we open a terminal
+        and compile the program using the command -->
+        make search.The executable file search is in
+        the /soplex-4.0.2/bin directory.
+    
+    From Project 1:
+        Usage of Dataset.cpp to read the input images.
+        Usage of DistanceMetrics.cpp.
+        
+    Soplex Library:
+        It provides namespace Soplex to give access
+        to the class soplex that we use to solve the lp.
+        
+        SetIntParam member function of soplex class,
+        is used to initialize the lp.
+        Flags OBJENSE_MINIMIZE defines that the problem
+        is a minimization problem and VERBOSITY_ERROR
+        defines the output to show errors only while 
+        the problem is solved.
+
+        RemoveRowRangeReal(start,end) removes the rows of
+        the lp to set new rows.
+        
+        LPCol sets the column of the lp(c^T) and the 
+        minimization value.AddColReal adds the column.
+        DSVector is a dynamic sparce vector adding 
+        x_i variables according to the c^T.(c^T * x 
+        is the objective function).
+        
+        DSVector row1 is used to set rows of the lp.
+        It adds coefficient 0 to the x_i's that are 
+        not set.Row1.add(index,value) adds coefficient
+        value to the row1 vector.
+        
+        LPRow sets the row of the lp.Flag equal,means
+        equality with the constraint value.
+        AddRowReal adds the row.
+        
+        ChangeLhsReal(index, new_value) sets a new constraint
+        as the left value (x_i < w_i) for the indexed row.
+        ChangeRhsReal(index, new_value) sets a new constraint
+        as the right value (x_i > w_i) for the indexed row.
+        
+        optimize() sets optimized parameters for optimized lp
+        results.
+        
+    EMD.cpp functions:
+        
+        Emd(Dataset,Datatet): 
+            Sets number of clusters,number of pixels.Creates two
+            vectors to pass them as parameters to imgclusterRead(vec)
+            in order to create the cluster for query and pictures
+            dataset.
+            
+            It calls setWeights(pictures,queries) to set the weights of each cluster(picture_weights,queries_weights).
+            
+            It calls GroundDistance() to calculate the ground distance between clusters storing it as vector ground_dist.
+            
+            It calls convertGDtoVec which creates a vector of
+            ground distance(c_linearSolver) in orded to be used
+            to set the columns for the lp.
+            
+        ImgclustersRead(pictures):
+            Creates vector of vector v,defines its size to hold 
+            the clusters and adds this vector v to vec vector in
+            order to hold clusters for all the pictures.
+            
+            Assuming each picture is represented by a vector then
+            to assign the clusters we imagine the pictures as an
+            28*28 array and every cluster starts from the rows of
+            pictures expanding the columns to complete the cluster.
+            Then we move to the next rows untill the clusters have
+            been created.
+            
+            Pic_row defines the index of picture's starting row and 
+            pic_col defines the columns of the cluster according to
+            the pic_row.Clusters_vec and queries_vec saves the clusters.
+        
+        GroundDistance:
+            For every cluster we find its median pixel and calculate the euclidean distance between this cluster
+            and every other cluster.
+            
+        SetWeights:   
+            For each picture we find its total weight.For every cluster we find its weight
+            and we divide it with the total weight of the picture in order to normalize the
+            weights for the comparison at the lp.
+            We store the weights of every cluster in a vector<vector<double>>.
+            
+        FindNearests:
+            Its parameters are the queries subset and pictures subset to test.
+            SetIntParam(objense,OBJENSE_MINIMIZE) defines the minimization problem.
+            SetIntParam(verbosity) defines the verbosity of the progress while
+            solving the lp.
+            
+            After defining object mysoplex,we add the cols of the lp(c^T) which is
+            the ground distance expanded in a vector c_linearSolver.
+            Then we add the rows which includes the constraints which is an equality
+            with the weights.We just add 1.0 to the variables that we want to satisfy
+            the constrains.
+            
+            Only for the first picture of the subset we add the constraints for pics
+            and queries.The even index of the rows refers to pictures_weights.
+            So for the rest pictures we just change the weights-constraints.
+
+Part 4: Clustering
+
+    Section 1: Manual
+
+    In order to run this program, firstly the user should make his current working
+    directory the Clustering one and then write the command "make" in order to 
+    compile it. In order to run it he should write the following command:
+
+        ./cluster -d <input_original_space> -i <input_new_space>  
+            -n <classes_from_NN_as_clusters_file> -c <configuration_file> 
+            -o <output_file>
+
+    where:
+
+        -> <input_original_space> is the path of the training file that contains
+        the 28x28 MNIST vectors, the original space vectors.
+
+        -> <input_new_space> is the path to the file that contains the latent vectors
+        that were created by the autoencoder giving as input the vectors of
+        <input_original_space> file.
+
+        -> <classes_from_NN_as_clusters_file> is the path that contains the images
+        as clusters as they are getting classified by a classifier.
+
+        -> <configuration_file> is the path to a cluster.conf file.
+
+        -> <output_file> is the path to the file that the results will be printed.
+
+    Section 2: Description
+
+    Firstly, the program reads the datasets and the given cluster.conf file.
+    Afterwards proceeds into solving the problem for the original and new space
+    and evaluates the clustering done at classes as clusts file. Finally, the results
+    are printed into <output_file>.
